@@ -65,9 +65,19 @@ Fills **cache** folder with images
 
 ### STAGE 4. Convert downloaded color images to red-black-white BMPs to be used as calendar top part
 
-
+```
+python run_make_tops.py
+```
+Fills **bmp** folder with the converted images. 
 
 ### STAGE 5. Create red-black-white BMPs with day information for the calendar bottom part
+
+```
+python run_make_bottoms.py
+```
+Fills **days** folder with the day images. 
+
+
 
 
 ### STAGE 6. Copy everything from 'sdcard' directory to a micro-sd-card.

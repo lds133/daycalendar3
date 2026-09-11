@@ -80,7 +80,7 @@ class DBEntry():
 
       
     def BmpFileName(self,enhance_mode):
-        return self.FileTitleEx(enhance_mode) +  self.db.BMPEXT 
+        return self.FileTitleEx(enhance_mode) +  self.db.cfg.BMPEXT 
       
 
         
