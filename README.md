@@ -3,11 +3,12 @@
 
 ## Create the SDCard 
 
-Creates and fill '''sdcard''' directory.
+Creates and fill **sdcard** directory.
 
 
 ### STAGE 0. Create environment
 
+Tested on Python 3.13
 
 windows 
 
@@ -32,8 +33,7 @@ Check settings.py for directory names and other staff
 
 ### STAGE 1. Fill images list from wikipedia "picture of the day"
 
-Tested on Python 3.9.0  
-    
+   
 https://en.wikipedia.org/wiki/Template:POTD/2023-01-01
 
 https://uk.wikipedia.org/wiki/Вікіпедія:Зображення_дня
@@ -62,6 +62,11 @@ Fills **cache** folder with images
 
 ### STAGE 3. Edit the collected database
 
+Update **rank** and **enhance** parameters for all images
+
+
+TBD
+
 
 ### STAGE 4. Convert downloaded color images to red-black-white BMPs to be used as calendar top part
 
@@ -78,11 +83,10 @@ python run_make_bottoms.py
 Fills **days** folder with the day images. 
 
 
-
-
 ### STAGE 6. Copy everything from 'sdcard' directory to a micro-sd-card.
 
 
+**tmp** and **cache** folers can be skipped.
 
 
 
