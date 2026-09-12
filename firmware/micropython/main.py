@@ -41,9 +41,9 @@ while(1):
         eink.drawbmp(dayfilename,0,0)
     finally:    
         eink.finit()
+        led.off()
 
-    led.off()    
-
+        
     (year, month, day, hour, mins) = nextwaketime(year, month, day, hour, mins)
     print("Waiting till %04i-%02i-%02i %02i:%02i" % (year, month, day, hour, mins))
     clk.waittill_active(year, month, day, hour, mins)

@@ -35,10 +35,13 @@ def MakeTopBMPs(cfg):
                         if os.path.isfile(cachefn):
                             print(cachefn, " - skipped")
                             continue
-                        img = page.make_image(e,em)
-                        Path(cachefn).parent.mkdir(parents=True, exist_ok=True)
-                        img.save(cachefn)
-                        print(cachefn, " - saved")
+                        img = page.make_picture(e,em)
+                        if img==None:
+                            print(cachefn, " - error")
+                        else:
+                            Path(cachefn).parent.mkdir(parents=True, exist_ok=True)
+                            img.save(cachefn)
+                            print(cachefn, " - saved")
                  
 
                 if (e.rank<cfg.MIN_RANK):

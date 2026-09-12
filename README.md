@@ -64,8 +64,10 @@ Fills **cache** folder with images
 
 Update **rank** and **enhance** parameters for all images
 
+```
+python run_viewer.py
+```
 
-TBD
 
 
 ### STAGE 4. Convert downloaded color images to red-black-white BMPs to be used as calendar top part

@@ -59,10 +59,10 @@ class Page():
         
     def make_bmp(self,dbentry,enhance_mode,maxheight):
 
-        print(dbentry.CacheFilePath)
-
-        print(">>",dbentry.CacheFilePath)
-        im = Image.open(dbentry.CacheFilePath) 
+        if not os.path.isfile(dbentry.ImageFilePath):
+            print("Image %s not found" % dbentry.ImageFilePath)
+            return None
+        im = Image.open(dbentry.ImageFilePath) 
 
         if (enhance_mode==DBEntry.ENHANCE_FOTO):
             im = self.increase_contrast(im,2)
@@ -280,7 +280,7 @@ class Page():
         
         
         
-    def make_image(self,e,enhance_mode):
+    def make_picture(self,e,enhance_mode):
         assert( e!=None )
 
         
@@ -288,6 +288,8 @@ class Page():
         htxt = self.measure_txt(tmp,self.FONT_SML,e.text)
 
         bmp = self.make_bmp(e,enhance_mode,self.cfg.EINK_TOP-htxt)
+        if bmp==None:
+            return None
 
         wbmp,hbmp = bmp.size
         xbmp = (self.cfg.EINK_WIDTH - wbmp) // 2

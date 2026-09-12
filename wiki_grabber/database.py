@@ -62,7 +62,7 @@ class DBEntry():
         return  os.path.join( path, fn )
     
     @property
-    def CacheFilePath(self):
+    def ImageFilePath(self):
         return os.path.join(self.db.imagepath,self.MakeCacheFileName() )
 
 

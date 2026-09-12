@@ -34,8 +34,8 @@ def DownloadWikiImages(cfg):
                 continue
             for d in dd:
                 e = DBEntry.Load(db,d['id'],d['mon'],d['day'])
-                print(e.CacheFilePath,end='')
-                (msg,isdelay) = download_file(cfg,e.imgurlfixed,e.CacheFilePath)
+                print(e.ImageFilePath,end='')
+                (msg,isdelay) = download_file(cfg,e.imgurlfixed,e.ImageFilePath)
                 if (isdelay):
                     time.sleep(cfg.POLITE_DELAY_SEC)
                 print(' ',msg)
