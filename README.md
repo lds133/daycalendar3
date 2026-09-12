@@ -74,6 +74,7 @@ TBD
 python run_make_tops.py
 ```
 Fills **bmp** folder with the converted images. 
+Also creates cache bmp images in **bmpcache** folder with different enhance mode applyed to be reviewed on stage 3.
 
 ### STAGE 5. Create red-black-white BMPs with day information for the calendar bottom part
 

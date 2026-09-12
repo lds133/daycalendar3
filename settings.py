@@ -8,8 +8,9 @@ class CFG():
     
     
     DBDIR = SDCARDDIR + DIRSEP +'db' # database. json files
-    CACHEDIR = SDCARDDIR + DIRSEP +'cache' # wiki source images (color)
-    BMPDIR = SDCARDDIR + DIRSEP +'bmp' # images converted to 3 color bmp
+    IMAGEDIR = SDCARDDIR + DIRSEP +'images' # wiki source images (color)
+    BMPDIR = SDCARDDIR + DIRSEP +'bmp' # images converted to 3 color bmp for firmware
+    BMPCACHEDIR = SDCARDDIR + DIRSEP +'bmpcache' # images converted to 3 color bmp for review
     BMPEXT= '.bmp'
     
     FIRSTYEAR = 2008 # grabbing start year
@@ -67,3 +68,6 @@ class CFG():
     DAY_SEPWIDTH    = 40
     DAY_SEPHEIGHT   = 0
     DAY_TINYMARGIN  = 1    
+    
+    
+    MIN_RANK = 2 

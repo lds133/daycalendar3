@@ -63,28 +63,20 @@ class DBEntry():
     
     @property
     def CacheFilePath(self):
-        return os.path.join(self.db.cachepath, self.MakeCacheFileName() )
+        return os.path.join(self.db.imagepath,self.MakeCacheFileName() )
 
 
-    def BmpFilePath(self,enhance_mode):
-        return os.path.join(self.db.bmppath, self.BmpFileName(enhance_mode) )        
+    def BmpFilePath(self):
+        return os.path.join(self.db.bmppath,     ("%02i-%02i" % (self.mon,self.day)), "%s-r%02i%s" % (self.id,self.rank,self.db.cfg.BMPEXT ) )        
 
+    def BmpCacheFilePath(self,enhance_mode):
+        return os.path.join(self.db.bmpcachepath,("%02i-%02i" % (self.mon,self.day)), "%s-e%02i%s" % (self.id,enhance_mode,self.db.cfg.BMPEXT ) )        
 
-    def FileTitleEx(self,enhance_mode):
-        return self.FileTitle + ("_%i" % enhance_mode)
-
-    @property
-    def FileTitle(self):
-        assert self.id!=None
-        return "%s-%02i-%02i" % (self.id,self.mon,self.day)
-
-      
-    def BmpFileName(self,enhance_mode):
-        return self.FileTitleEx(enhance_mode) +  self.db.cfg.BMPEXT 
-      
-
+            
+     
         
     def MakeCacheFileName(self):
+        assert self.id!=None
         MAXLEN = 20
         imgurlfix = self.imgurl.split("?", 1)[0]
         fn = str( urllib.parse.unquote(imgurlfix) )
@@ -92,7 +84,7 @@ class DBEntry():
         if n==-1:
             return ''
         ext = fn[n:]
-        cfn = self.FileTitle+ext         
+        cfn = "%s-%02i-%02i%s" % (self.id,self.mon,self.day,ext)
         return cfn
         
         
@@ -190,8 +182,7 @@ class DBEntry():
 
 class DB():
 
-
-    
+ 
     
     def make_folder(self,dir):
         if not os.path.exists(dir):
@@ -203,11 +194,12 @@ class DB():
         assert cfg!=None
         self.cfg = cfg
         self.dbpath = cfg.DBDIR
-        self.cachepath = cfg.CACHEDIR
+        self.imagepath = cfg.IMAGEDIR
         self.bmppath = cfg.BMPDIR
+        self.bmpcachepath = cfg.BMPCACHEDIR
         
         self.make_folder(self.dbpath )
-        self.make_folder(self.cachepath )
+        self.make_folder(self.imagepath )
         self.make_folder(self.bmppath  )
 
     def GetAllDay(self,mon,day):

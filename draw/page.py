@@ -4,7 +4,7 @@ import datetime
 from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageFont, ImageDraw
 from draw.astro import AstroData
 from wiki_grabber.database import DB,DBEntry
-
+from draw.template import CreateImageTemplate
 
 
 
@@ -17,7 +17,6 @@ class Page():
         self.cfg = cfg
         self.eink_width = cfg.EINK_WIDTH
         self.eink_height = cfg.EINK_TOP        
-        self.eink_template_path = cfg.EINK_TEMPLATE_PATH
         self.FONT_SML = ImageFont.truetype(cfg.FONT_DIR + '/mini_pixel-7.ttf', size=20)
         self.FONT_BIG = ImageFont.truetype(cfg.FONT_DIR + '/ClementFive.ttf', size=150)
         self.FONT_MID = ImageFont.truetype(cfg.FONT_DIR + '/timesbd.ttf', size=25)
@@ -106,10 +105,7 @@ class Page():
         
         
         
-    def load_tmp(self,templatefilename=None):
-        tmp = Image.open(self.eink_template_path if templatefilename==None else templatefilename) 
-        tmp = tmp.rotate(-90,expand=True)
-        return tmp
+
         
         
     def save_tmp(self,tmp,issavefile=True):
@@ -288,42 +284,35 @@ class Page():
         
         
         
-    def draw_image(self,e,enhance_mode):
-
+    def make_image(self,e,enhance_mode):
         assert( e!=None )
 
-        bmpfn = e.BmpFilePath(enhance_mode)
         
+        tmp = CreateImageTemplate(self.cfg.EINK_WIDTH,self.cfg.EINK_TOP)
+        htxt = self.measure_txt(tmp,self.FONT_SML,e.text)
 
-        if os.path.isfile(bmpfn):
-            
-            tmp = Image.open(bmpfn) 
-            print("BMP Loaded",bmpfn)
+        bmp = self.make_bmp(e,enhance_mode,self.cfg.EINK_TOP-htxt)
+
+        wbmp,hbmp = bmp.size
+        xbmp = (self.cfg.EINK_WIDTH - wbmp) // 2
+        ybmp = (self.cfg.EINK_TOP-htxt - hbmp) // 2
+
+        self.draw_img(tmp,bmp,xbmp ,ybmp)
+
+        picbottom = ybmp+hbmp
+        texttop = self.cfg.EINK_TOP - htxt
         
-        else:
+        dy = (texttop-picbottom)//2
 
-            tmp = self.load_tmp()
-            htxt = self.measure_txt(tmp,self.FONT_SML,e.text)
-
-            bmp = self.make_bmp(e,enhance_mode,self.cfg.EINK_TOP-htxt)
-
-            wbmp,hbmp = bmp.size
-            xbmp = (self.cfg.EINK_WIDTH - wbmp) // 2
-            ybmp = (self.cfg.EINK_TOP-htxt - hbmp) // 2
-
-            self.draw_img(tmp,bmp,xbmp ,ybmp)
-
-            picbottom = ybmp+hbmp
-            texttop = self.cfg.EINK_TOP - htxt
-            
-            dy = (texttop-picbottom)//2
-
-            self.draw_txt(tmp,self.FONT_SML,e.text,texttop-dy)
-            
-            tmp.save(bmpfn)
-            print("BMP Saved",bmpfn)
+        self.draw_txt(tmp,self.FONT_SML,e.text,texttop-dy)
         
         return tmp        
+        
+        
+        
+        
+        
+  
         
     def draw_all(self,enhance_mode,id,mon,day,year):
 
