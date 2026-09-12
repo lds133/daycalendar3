@@ -174,7 +174,7 @@ function main(dbid,mon,day,divid)
 		//console.log(data);
 		
 
-		for (e of data) 
+		for (e of data.slice().reverse()) 
 		{
 			//console.log(e);
 			text.push('<div>');
@@ -183,7 +183,7 @@ function main(dbid,mon,day,divid)
 				const alttxt = '['+e.id.toString()+']  '+e.day.toString()+' '+_mon[mon-1]+' ('+enh.toString()+')';
 				const imgid = uniqueid(e.id,e.mon,e.day,enh);
 				const imgurl = bmpurl(e,enh);
-				text.push('<img id="'+imgid+'" src="'+imgurl+'" alt="'+alttxt+'" ');
+				text.push('<img id="'+imgid+'" src="'+imgurl+'" alt="'+alttxt+'" title="'+alttxt+'" ');
 				text.push('onclick="imgclick(\''+imgid+'\',\''+e.id.toString()+'\','+e.mon.toString()+','+e.day.toString()+','+enh.toString()+');" '); 
 				text.push('class="border '+_border[enh==e.enhance ? e.rank : RANK_NONE ]+'" ');
 
