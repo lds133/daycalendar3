@@ -40,10 +40,9 @@ class CFG():
     DRAW_DIR = 'draw'
     
     SPRITE_DIR =  DRAW_DIR+DIRSEP+'sprite'
-    SPRITE_EXT = '.bmp'
+    SPRITE_EXT = BMPEXT
     
     
-    EINK_TEMPLATE_PATH = DRAW_DIR+DIRSEP+ 'eink_template.bmp'
     
     
     FONT_DIR = DRAW_DIR+DIRSEP+'font'
@@ -71,7 +70,17 @@ class CFG():
     DAY_TINYMARGIN  = 1    
     
     
-    MIN_RANK = 2 
+    MIN_RANK = 2 # pictures with rank lower that that will be ignored
     
     
-    CALENDAR_YEARS_COUNT = 1
+    CALENDAR_YEARS_COUNT = 10
+    
+    
+    STARTPAGE_TITLE1 = "Відривний" 
+    STARTPAGE_TITLE2 = "календар"
+    STARTPAGE_VERSION = "SEP 2026"
+    
+    
+    
+    SERV_IPADDR = "0.0.0.0"
+    SERV_PORT = 5555

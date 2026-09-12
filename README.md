@@ -87,7 +87,7 @@ Fills **days** folder with the day images.
 ### STAGE 6. Copy everything from 'sdcard' directory to a micro-sd-card.
 
 
-**tmp** and **cache** folers can be skipped.
+Only **bmp** and **days** folers are needed.
 
 
 

@@ -45,7 +45,7 @@ class DBEntry():
         ee.enhance = self.enhance
         ee.rank = self.rank
         print("Update",self.id,self.mon,self.day,"->",self.enhance, self.rank)                
-        ee.Save()
+        ee.Save(True)
 
 
     @property
