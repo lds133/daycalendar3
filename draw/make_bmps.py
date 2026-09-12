@@ -5,6 +5,7 @@ from pathlib import Path
 from draw.page import Page
 from wiki_grabber.database import DB,DBEntry
 import shutil
+from datetime import datetime,timedelta
 
 
 
@@ -46,6 +47,35 @@ def MakeTopBMPs(cfg):
                     Path(e.BmpFilePath()).parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(bmpcachefn,e.BmpFilePath())
                     print(e.BmpFilePath(), " - created")
-                    exit(0)
                     
                     
+                    
+def MakeBottomBMPs(cfg):
+
+    db = DB(cfg)
+    page = Page(cfg)
+
+    t = datetime(datetime.now().year, 1, 1)
+    startyear = t.year
+    endyear = startyear + cfg.CALENDAR_YEARS_COUNT
+    
+    
+    while (t.year<=endyear):
+        
+        dd = db.GetAllDay(t.month,t.day)
+        assert dd!=None
+         
+        dayfn = os.path.join( cfg.DAYSDIR , str(t.year), "day_%04i-%02i-%02i%s" % (t.year,t.month,t.day,cfg.BMPEXT))
+        if os.path.isfile(dayfn):
+            print(dayfn," - skipped")
+        else:    
+            Path(dayfn).parent.mkdir(parents=True, exist_ok=True)
+            
+            img = page.make_day(t.year,t.month,t.day) 
+            img.save(dayfn)
+            print(dayfn, " - saved")  
+        
+        t += timedelta(days=1)    
+        
+        
+        

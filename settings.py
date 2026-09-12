@@ -11,6 +11,7 @@ class CFG():
     IMAGEDIR = SDCARDDIR + DIRSEP +'images' # wiki source images (color)
     BMPDIR = SDCARDDIR + DIRSEP +'bmp' # images converted to 3 color bmp for firmware
     BMPCACHEDIR = SDCARDDIR + DIRSEP +'bmpcache' # images converted to 3 color bmp for review
+    DAYSDIR = SDCARDDIR + DIRSEP +'days' 
     BMPEXT= '.bmp'
     
     FIRSTYEAR = 2008 # grabbing start year
@@ -71,3 +72,6 @@ class CFG():
     
     
     MIN_RANK = 2 
+    
+    
+    CALENDAR_YEARS_COUNT = 1

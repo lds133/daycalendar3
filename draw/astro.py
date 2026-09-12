@@ -21,12 +21,12 @@ class AstroData():
         self.FONT  = ImageFont.truetype(cfg.FONT_DIR + '/times.ttf', size=14)
         self.FONT2 = ImageFont.truetype(cfg.FONT_DIR +'/times.ttf', size=16)
         self.FONT3 = ImageFont.truetype(cfg.FONT_DIR +'/timesbd.ttf', size=25)
-        self.LINE_HEIGHT =  cfg.DAY_TINYMARGIN   
-        self.YMARGIN =      cfg.DAY_SEPHEIGHT    
-        self.XMARGIN =      cfg.DAY_SEPWIDTH     
-        self.SEPWIDTH =     cfg.DAY_XMARGIN      
-        self.SEPHEIGHT =    cfg.DAY_YMARGIN      
-        self.TINYMARGIN =   cfg.DAY_LINE_HEIGH  
+        self.TINYMARGIN   =  cfg.DAY_TINYMARGIN   
+        self.SEPHEIGHT    =  cfg.DAY_SEPHEIGHT    
+        self.SEPWIDTH     =  cfg.DAY_SEPWIDTH     
+        self.XMARGIN      =  cfg.DAY_XMARGIN      
+        self.YMARGIN      =  cfg.DAY_YMARGIN      
+        self.LINE_HEIGHT  =  cfg.DAY_LINE_HEIGHT 
         self.DASH ="\u2012"
         
         self.city = LocationInfo(cfg.ASTRO_NAME, cfg.ASTRO_REGION, cfg.ASTRO_TIMEZONE_NAME, cfg.ASTRO_LATITUDE, cfg.ASTRO_LONGITUDE)
@@ -155,7 +155,7 @@ class AstroData():
         
         
         y = self.YT
-        sprite_put(image,self.sunsprite,self.XMIN,y)
+        sprite_put(self.cfg,image,self.sunsprite,self.XMIN,y)
         
         y += self.WL
         img.text((self.XMIN,y),"Схід", font=self.FONT)
@@ -181,7 +181,7 @@ class AstroData():
 
         
         y = self.YT
-        sprite_put(image,self.moonsprite,self.XR,y)
+        sprite_put(self.cfg,image,self.moonsprite,self.XR,y)
         
         y += self.WL
         img.text((self.XMAX,y),self.moonstate, font=self.FONT,anchor="ra")

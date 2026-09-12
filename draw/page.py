@@ -26,6 +26,7 @@ class Page():
         self.LINE_SPACING = 0.9  
 
         self.cal_page = "tmp_calpage.bmp"
+        
             
 
 
@@ -245,41 +246,36 @@ class Page():
             
 
 
-    def draw_date(self,tmp,e,year):
+    def draw_date(self,tmp,year,mon,day):
         seplinewidth = 3  
         seplinemargin = 2
 
-        
-
-        edate = datetime.date(year, e.mon, e.day)
+        edate = datetime.date(year, mon, day)
         dow = edate.weekday()
         dowtext = self.dowstr[dow]
-        montext = self.monstr[e.mon-1]
-        #print(self.dowstr[dow],dow,edate)
+        montext = self.monstr[mon-1]
     
         color = 0
         if (dow==6):
             color = 1
+            
+        topmargin = 0
+        einkwidth, einkheight = tmp.size
 
        
-        date_ypos =self.EINK_TOP+seplinewidth+ (self.EINK_HEIGHT-self.EINK_TOP-seplinewidth)//2
+        date_ypos =topmargin+seplinewidth+ (einkheight-topmargin-seplinewidth)//2
         
         img1 = ImageDraw.Draw(tmp)   
-        img1.rectangle([(seplinemargin , self.EINK_TOP+1), (self.EINK_WIDTH-seplinemargin, self.EINK_TOP+seplinewidth-1)] , fill = 0) 
-        (xl,xr) = self.print_day(tmp,e.day,self.FONT_BIG,self.EINK_WIDTH /2, date_ypos,color)
+        img1.rectangle([(seplinemargin , topmargin+1), (einkwidth-seplinemargin, topmargin+seplinewidth-1)] , fill = 0) 
+        (xl,xr) = self.print_day(tmp,day,self.FONT_BIG,einkwidth /2, date_ypos,color)
         
         
         TEXTSPACE = 45
         TEXTMARGIN = 2
-        textwidth = (self.EINK_WIDTH -TEXTSPACE)//2 - TEXTMARGIN
-        self.print_wide(img1,self.FONT_MID,color,seplinemargin,self.EINK_TOP+seplinewidth+1,textwidth,montext)
-        self.print_wide(img1,self.FONT_MID,color,textwidth + TEXTSPACE,self.EINK_TOP+seplinewidth+1,textwidth,dowtext)
-        
-        #img1.text((seplinemargin,self.EINK_TOP+seplinewidth+1), montext, font=self.FONT_MID,fill=color)
-        #img1.text((self.EINK_WIDTH-seplinemargin, self.EINK_TOP+seplinewidth+1), dowtext, font=self.FONT_MID,anchor="ra",fill=color)
-        
+        textwidth = (einkwidth -TEXTSPACE)//2 - TEXTMARGIN
+        self.print_wide(img1,self.FONT_MID,color,seplinemargin,topmargin+seplinewidth+1,textwidth,montext)
+        self.print_wide(img1,self.FONT_MID,color,textwidth + TEXTSPACE,topmargin+seplinewidth+1,textwidth,dowtext)
 
-        
         return (xl,xr)
         
         
@@ -311,32 +307,23 @@ class Page():
         
         
         
-        
-  
-        
-    def draw_all(self,enhance_mode,id,mon,day,year):
-
-
-        db = DB(self.cfg)
+    def make_day(self,year,mon,day):
         astro = AstroData(self.cfg)
+        tmpheight = self.cfg.EINK_HEIGHT - self.cfg.EINK_TOP
+        tmp =   CreateImageTemplate(self.cfg.EINK_WIDTH,tmpheight)
         
-
-        e = DBEntry.Load(db,id,mon,day)
-        if (e==None):
-            return None
-
-        tmp =   self.draw_image(e,enhance_mode)
-        
-        (xl1,xr1) = self.draw_date(tmp,e,year)
+        (xl1,xr1) = self.draw_date(tmp,year,mon,day)
         astro_width = 93
-        (xl2,xr2) = (astro_width,self.EINK_WIDTH-astro_width)
+        (xl2,xr2) = (astro_width,self.cfg.EINK_WIDTH-astro_width)
         xl = min(xl1,xl2)
         xr = max(xr1,xr2)
         
-        astro.SetPos(xl,xr, self.EINK_TOP+40,self.EINK_WIDTH,self.EINK_HEIGHT)
-        
+        astro_offset = 40
+        astro.SetPos(xl,xr, astro_offset,self.cfg.EINK_WIDTH,tmpheight)
         astro.SetDay(year,mon,day)
-        
         astro.draw(tmp)
        
-        return tmp
+        return tmp        
+        
+  
+        
