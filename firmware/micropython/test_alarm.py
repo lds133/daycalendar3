@@ -22,8 +22,8 @@ led_pin = Pin(LED_PIN, Pin.OUT)
 led_pin.off()
 
 # Alarm times (year, month, day, weekday, hour, minute, second, millisecond)
-alarm1_time = urtc.datetime_tuple(2026, 9, 9, None, 11, 5, 0, 0)  # Alarm 1 uses full datetime
-alarm2_time = urtc.datetime_tuple(2026, 9, 9, None, 11, 10, 0, 0)   # Alarm 2 uses day, hour, minute, weekday
+alarm1_time = urtc.datetime_tuple(2026, 9, 10, None, 16, 0, 0, 0)  # Alarm 1 uses full datetime
+alarm2_time = urtc.datetime_tuple(2026, 9, 10, None, 16, 5, 0, 0)   # Alarm 2 uses day, hour, minute, weekday
 
 # Print the current time from the RTC
 def print_current_time():

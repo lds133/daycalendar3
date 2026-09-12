@@ -1,47 +1,27 @@
+# test_clock.py
+# Quick manual test for clock.py on the Pico 2 + DS3231.
+
+from clock import Clock
+
+clk = Clock()
+
+# 1. Set a known time.
+#clk.settime(2026, 9, 12, 20, 55)
 
 
-import time
-import urtc
-from machine import I2C, Pin
+print("Time after settime:", clk.gettime())
 
-days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+# 2. Read it back.
+y, mo, d, h, mi = clk.gettime()
+print(f"Current time -> {y:04}-{mo:02}-{d:02} {h:02}:{mi:02}")
 
+# 3. Wait until 1 minute from now (board will lightsleep until the
+#    DS3231 alarm fires). Adjust target as needed for your test.
+target_min = (mi + 1) % 60
+target_hour = h if target_min != 0 else (h + 1) % 24
+print(f"Sleeping until {target_hour:02}:{target_min:02} ...")
 
-i2c = I2C(0, scl=Pin(21), sda=Pin(20))
-rtc = urtc.DS3231(i2c)
+clk.waittill_active(y, mo, d, target_hour, target_min)
+#clk.waittill(y, mo, d, target_hour, target_min)
 
-# Set the current time using a specified time tuple
-# Time tuple: (year, month, day, day of week, hour, minute, seconds, milliseconds)
-#initial_time = (2025, 1, 30, 1, 12, 30, 0, 0)
-
-#initial_time_tuple = time.localtime()  # tuple (microPython)
-#initial_time_seconds = time.mktime(initial_time_tuple)  # local time in seconds
-#initial_time = urtc.seconds2tuple(initial_time_seconds)
-#rtc.datetime(initial_time)
-
-
-
-while True:
-    current_datetime = rtc.datetime()
-    temperature = rtc.get_temperature()
-    
-    # Display time details
-    print('Current date and time:')
-    print('Year:', current_datetime.year)
-    print('Month:', current_datetime.month)
-    print('Day:', current_datetime.day)
-    print('Hour:', current_datetime.hour)
-    print('Minute:', current_datetime.minute)
-    print('Second:', current_datetime.second)
-    print('Day of the Week:', days_of_week[current_datetime.weekday])
-    print(f"Current temperature: {temperature}°C")    
-    # Format the date and time
-    formatted_datetime = (
-        f"{days_of_week[current_datetime.weekday]}, "
-        f"{current_datetime.year:04d}-{current_datetime.month:02d}-{current_datetime.day:02d} "
-        f"{current_datetime.hour:02d}:{current_datetime.minute:02d}:{current_datetime.second:02d} "
-    )
-    print(f"Current date and time: {formatted_datetime}")
-    
-    print(" \n");
-    time.sleep(1)
+print("Woke up! Time now:", clk.gettime())

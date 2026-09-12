@@ -36,3 +36,4 @@ with open("/sd/test01.txt", "w") as file:
 with open("/sd/test01.txt", "r") as file:
     data = file.read()
     print(data)
+    
