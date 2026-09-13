@@ -6,6 +6,11 @@
 3. SD card adapter or module
 4. DS3231 RTC Module
 
+![Front](doc/front.png)
+![Back](doc/back1.png)
+![Back](doc/back2.png)
+
+
 # Wiring
 
 

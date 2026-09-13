@@ -3,13 +3,15 @@
 
 ## Prepare hardware
 
+![Front](hardware/doc/front.png)
+
 See [hardware](hardware/readme.md)
 
 
 
 ## Prepare the SDCard 
 
-
+![Front](hardware/doc/sdcard.png)
 
 
 ### STAGE 0. Create environment
@@ -113,7 +115,7 @@ See [CALENDAR_YEARS_COUNT](settings.py) parameter
 
 ### STAGE 6. Copy calendar data from 'sdcard' directory to a sd card.
 
-The next artefacts are essential *bmp** and **days** folers, readme.txt and readme.bmp files.
+The next artefacts are essential **bmp** and **days** folers, **readme.txt** and **readme.bmp** files.
 
 The SD card must be FAT32 formatted.
 
