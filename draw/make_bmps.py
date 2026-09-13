@@ -43,15 +43,36 @@ def MakeTopBMPs(cfg):
                             img.save(cachefn)
                             print(cachefn, " - saved")
                  
+                    
+         
+def CopyTopBMPs(cfg):
+
+    page = Page(cfg)
+    db = DB(cfg)
+
+    for day in range(1,32):
+        for mon in range(1,13):
+            dd = db.GetAllDay(mon,day)
+            if (dd==None):
+                continue
+            for d in dd:
+                e = DBEntry.Load(db,d['id'],d['mon'],d['day'])
+                if (e==None):
+                    continue
+
+                bmpcachefn = e.BmpCacheFilePath(e.enhance)
+                assert os.path.isfile(bmpcachefn), "Run MakeTopBMPs first"
 
                 if (e.rank<cfg.MIN_RANK):
                     print(e.BmpFilePath(), " - rank too low. skipped")
                 else:
                     Path(e.BmpFilePath()).parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(bmpcachefn,e.BmpFilePath())
-                    print(e.BmpFilePath(), " - created")
-                    
-                    
+                    print(e.BmpFilePath(), " - copied")
+
+
+
+         
                     
 def MakeBottomBMPs(cfg):
 

@@ -1,9 +1,15 @@
 # DayCalendar 3.0
 
 
-## Create the SDCard 
+## Prepare hardware
 
-Creates and fill **sdcard** directory.
+See [hardware](hardware/readme.md)
+
+
+
+## Prepare the SDCard 
+
+
 
 
 ### STAGE 0. Create environment
@@ -26,57 +32,72 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-
-
 Check settings.py for directory names and other staff
 
 
-### STAGE 1. Fill images list from wikipedia "picture of the day"
-
-   
-https://en.wikipedia.org/wiki/Template:POTD/2023-01-01
-
-https://uk.wikipedia.org/wiki/Вікіпедія:Зображення_дня
-
-https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day
-
-https://uk.wikipedia.org/wiki/Шаблон:Potd/2019-01
 
 
+
+
+### STAGE 1. Fill images list from wikipedia ["picture of the day"](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day)
+
+[English Potd](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day/Archive)
+
+[Ukrainian Potd](https://uk.wikipedia.org/wiki/Шаблон:Potd/2019-01) 
+  
 ```
 python run_grab_wiki.py
 ```
-
 Fills **db** dirctory with json files
 
 
 
+
+
+
+
 ### STAGE 2. Load color images from the wikipedia site
-
-
 ```
 python run_download_images.py
 ```
 Fills **cache** folder with images
 
 
+
+
+
+
+
 ### STAGE 3. Edit the collected database
 
-Update **rank** and **enhance** parameters for all images
+#### 3.1 Create cache bmp images in **bmpcache** folder with different enhance mode applyed to be reviewed later.
+```
+python run_make_bmps.py
+```
 
+#### 3.2 Update **rank** and **enhance** parameters for all images
 ```
 python run_viewer.py
 ```
 
+See the web server [UI description](viewer/readme.md)
 
 
-### STAGE 4. Convert downloaded color images to red-black-white BMPs to be used as calendar top part
+
+
+
+
+
+### STAGE 4. Copy created red-black-white BMPs to be used as calendar top part
 
 ```
 python run_make_tops.py
 ```
 Fills **bmp** folder with the converted images. 
-Also creates cache bmp images in **bmpcache** folder with different enhance mode applyed to be reviewed on stage 3.
+
+See [MIN_RANK](settings.py) parameter
+
+
 
 ### STAGE 5. Create red-black-white BMPs with day information for the calendar bottom part
 
@@ -86,19 +107,15 @@ python run_make_bottoms.py
 Fills **days** folder with the day images. 
 
 
-### STAGE 6. Copy everything from 'sdcard' directory to a micro-sd-card.
-
-
-Only **bmp** and **days** folers are needed.
+See [CALENDAR_YEARS_COUNT](settings.py) parameter
 
 
 
+### STAGE 6. Copy calendar data from 'sdcard' directory to a sd card.
 
+The next artefacts are essential *bmp** and **days** folers, readme.txt and readme.bmp files.
 
-
-
-
-## Hardware
+The SD card must be FAT32 formatted.
 
 
 
@@ -117,45 +134,6 @@ Only **bmp** and **days** folers are needed.
 
 
 
-
-
-
-
-
-
-https://github.com/antgon/pico-ds3231/blob/main/lib/ds3231.c
-
-
-https://github.com/alpertng02/pico-ds3231
-
-
-https://kamami.pl/moduly-rtc/1184328-modds3231-modul-zegara-czasu--5906623483334.html
-
-
-SDA GP16
-SCL GP17
-
-SQW GP22
-
-
-
-
-https://wiki.kamamilabs.com/index.php?title=KAmodMicroSD_(PL)
-
-https://kamami.pl/czytniki-kart-pamieci/587139-kamodmicrosd-5906623433377.html
-
-https://github.com/elehobica/pico_fatfs
-
-SD card module
-
-5V
-3.3V
-GND
-CS    CS     GP5
-DI    MOSI   GP3   
-CLK   SCK    GP2
-DO    MISO   GP4
-CD   
 
 
 

@@ -3,4 +3,4 @@ from draw.make_bmps import MakeTopBMPs
 
 
 cfg = CFG()
-CopyTopBMPs(cfg)
+MakeTopBMPs(cfg)

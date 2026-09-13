@@ -73,7 +73,7 @@ class CFG():
     MIN_RANK = 2 # pictures with rank lower that that will be ignored
     
     
-    CALENDAR_YEARS_COUNT = 10
+    CALENDAR_YEARS_COUNT = 50
     
     
     STARTPAGE_TITLE1 = "Відривний" 
