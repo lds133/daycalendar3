@@ -79,8 +79,14 @@ class CFG():
     STARTPAGE_TITLE1 = "Відривний" 
     STARTPAGE_TITLE2 = "календар"
     STARTPAGE_VERSION = "SEP 2026"
-    
+    STARTPAGE_URL = "https://github.com/lds133/daycalendar3"
+    STARTPAGE_BMP = "readme.bmp"
+    STARTPAGE_QRCODE_FILE = "draw/qrcode.png"
+    STARTPAGE_TXT = "readme.txt"
     
     
     SERV_IPADDR = "0.0.0.0"
     SERV_PORT = 5555
+    
+    
+    

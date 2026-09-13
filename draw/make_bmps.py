@@ -8,7 +8,6 @@ import shutil
 from datetime import datetime,timedelta
 
 
-
 def MakeTopBMPs(cfg):
 
     page = Page(cfg)
@@ -102,4 +101,5 @@ def MakeBottomBMPs(cfg):
         t += timedelta(days=1)    
         
         
-        
+
+    
