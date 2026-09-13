@@ -24,12 +24,15 @@ eink = EinkSDCard()
 clk = Clock()
 led = Pin(25, Pin.OUT)
 
+
+
 while(1):
     
     led.on()
     eink.init(False)
     try:
         year, month, day, hour, mins = clk.gettime()
+        random.seed(mins | (hour << 6) | (day << 11) | (month << 16) | (year << 20))
         dayfilename = "/sd/days/%04i/day_%04i-%02i-%02i.bmp" % (year,year,month,day)
         imgdir = "/sd/bmp/%02i-%02i" % (month,day)
         print(imgdir)
