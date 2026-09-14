@@ -14,8 +14,8 @@ def nextwaketime(year, month, day, hour, mins):
     else:
         seconds_left = (24 - hour) * 3600 - mins * 60
     timestamp = time.mktime((year, month, day, hour, mins, 0, 0, 0))
-    #timestamp += seconds_left
-    timestamp += 180
+    timestamp += seconds_left
+    #timestamp += 180
     
     nyear, nmonth, nday, nhour, nmins, _, _, _ = time.localtime(timestamp)
     return (nyear, nmonth, nday, nhour, nmins)
