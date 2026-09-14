@@ -1,5 +1,7 @@
 # DayCalendar 3.0
 
+[A monument to the thing that is gone.](history/readme.md)
+
 ## Prepare hardware
 
 ![Front](hardware/doc/front.png)
