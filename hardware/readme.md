@@ -1,48 +1,61 @@
 # Hardware
 
-
-1. [Waveshare 3 color eink panel](https://www.waveshare.com/wiki/7.5inch_HD_e-Paper_HAT)
-2. [Raspberry Pi pico 2 board](https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2)
+1. [Waveshare 3-color e-ink panel](https://www.waveshare.com/wiki/7.5inch_HD_e-Paper_HAT)
+2. [Raspberry Pi Pico 2 board](https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2)
 3. SD card adapter or module
-4. DS3231 RTC Module
+4. DS3231 RTC module
 
 ![Front](doc/front.png)
 ![Back](doc/back1.png)
 
-
-
 # Wiring
 
+| PICO2 | E-Ink | SD Card | DS3231 | Note                |
+|-------|-------|---------|--------|---------------------|
+| GP10  | SCK   |         |        | SPI1                |
+| GP11  | TX    |         |        | SPI1                |
+| GP12  | RX    |         |        | SPI1, not used      |
+| GP13  | CS    |         |        | SPI1                |
+| GP14  | DC    |         |        |                     |
+| GP15  | RST   |         |        |                     |
+| GP9   | BUSY  |         |        |                     |
+| GP3   | POWER |         |        | Not used            |
+| GP21  |       |         | SCL    | I2C0                |
+| GP20  |       |         | SDA    | I2C0                |
+| GP22  |       |         | SQW    | Alarm interrupt     |
+| GP19  |       | TX      |        | SPI0                |
+| GP18  |       | SCK     |        | SPI0                |
+| GP17  |       | CS      |        | SPI0                |
+| GP16  |       | RX      |        | SPI0                |
 
-|PICO2| EINK  | SD Card| DS3231 | Note |
-|-----|-------|--------|--------|------|
-|GP10 | SCK   |        |        |SPI1  | 
-|GP11 | TX    |        |        |SPI1  | 
-|GP12 | RX    |        |        |SPI1, Not used  | 
-|GP13 | CS    |        |        |SPI1  | 
-|GP14 | DC    |        |        |      | 
-|GP15 | RST   |        |        |      | 
-|GP9  | BUSY  |        |        |      | 
-|GP3  | POWER |        |        |Not used | 
-|GP21 |       |        | SCL    |I2C0  | 
-|GP20 |       |        | SDA    |I2C0  | 
-|GP22 |       |        | SQW    |Alarm interrupt  | 
-|GP19 |       | TX     |        |SPI0  | 
-|GP18 |       | SCK    |        |SPI0  | 
-|GP17 |       | CS     |        |SPI0  | 
-|GP16 |       | RX     |        |SPI0  | 
-
-Eink powered 3.3v
-
-Clock powered 5v
-
-Direct connection used to the SD cards pint through SDCard-to-MicroSDCard adapter.
+- E-ink is powered at 3.3V.
+- Clock is powered at 5V.
+- The SD card is wired directly through an SD-to-microSD adapter.
 
 # Firmware
 
-1. Flash the pico with micropython.
-2. Copy *.py files from **micropyton** folder to the board.
+1. Flash the Pico with MicroPython.
+2. Copy the `*.py` files from the **micropython** folder to the board.
+3. Insert the prepared SD card.
+4. Reset the board.
 
-Tested on **MicroPython v1.29.0 on 2026-08-24; Raspberry Pi Pico2 with RP2350**
+Tested on **MicroPython v1.29.0 (2026-08-24), Raspberry Pi Pico 2 with RP2350**.
 
+## Setting the clock
 
+To set the clock, create a **clock.txt** file in the SD card's root folder, with the first line in the format `YYYY-MM-DD HH:MM`. The file is read during POST, and deleted once the new time is set.
+
+Example `clock.txt`:
+```
+2026-09-14 11:44
+```
+
+## The firmware loop
+
+The firmware runs a built-in POST (power-on self-test). If it passes, setup information is displayed for 30 seconds; if it fails, the firmware halts.
+
+During the main loop, the firmware reads the day's info from the matching file in the **days** folder and pairs it with a random image from the corresponding month-day subfolder in the **bmp** folder. The image is changed at 00:00, 12:00, and 18:00.
+
+## Onboard LED
+
+The onboard LED is lit while the firmware is running and off while it's asleep. If it stays lit for more than a couple of minutes, the firmware has likely stalled. A blinking LED also indicates a problem.

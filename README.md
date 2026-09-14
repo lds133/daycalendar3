@@ -1,141 +1,90 @@
 # DayCalendar 3.0
 
-
 ## Prepare hardware
 
 ![Front](hardware/doc/front.png)
 
 See [hardware](hardware/readme.md)
 
-
-
-## Prepare the SDCard 
+## Prepare the SD card
 
 ![Front](hardware/doc/sdcard.png)
 
+### Stage 0. Create environment
 
-### STAGE 0. Create environment
+Tested on Python 3.13.
 
-Tested on Python 3.13
-
-windows 
-
+**Windows**
 ```
-C:\TOOLS\python313\python.exe -m venv  .venv
+C:\TOOLS\python313\python.exe -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-
-linux
+**Linux**
 ```
-python3 -m venv  .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Check settings.py for directory names and other staff
+Check `settings.py` for directory names and other settings.
 
+### Stage 1. Fill the image list from Wikipedia's ["Picture of the day"](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day)
 
+[English POTD](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day/Archive)
 
+[Ukrainian POTD](https://uk.wikipedia.org/wiki/Шаблон:Potd/2019-01)
 
-
-
-### STAGE 1. Fill images list from wikipedia ["picture of the day"](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day)
-
-[English Potd](https://en.wikipedia.org/wiki/Wikipedia:Picture_of_the_day/Archive)
-
-[Ukrainian Potd](https://uk.wikipedia.org/wiki/Шаблон:Potd/2019-01) 
-  
 ```
 python run_grab_wiki.py
 ```
-Fills **db** dirctory with json files
+Fills the **db** directory with JSON files.
 
+### Stage 2. Load color images from the Wikipedia site
 
-
-
-
-
-
-### STAGE 2. Load color images from the wikipedia site
 ```
 python run_download_images.py
 ```
-Fills **cache** folder with images
+Fills the **cache** folder with images.
 
+### Stage 3. Edit the collected database
 
+#### 3.1 Create cached BMP images with different enhancement modes applied, for later review
 
-
-
-
-
-### STAGE 3. Edit the collected database
-
-#### 3.1 Create cache bmp images in **bmpcache** folder with different enhance mode applyed to be reviewed later.
 ```
 python run_make_bmps.py
 ```
+Fills the **bmpcache** folder.
 
-#### 3.2 Update **rank** and **enhance** parameters for all images
+#### 3.2 Update the **rank** and **enhance** parameters for all images
+
 ```
 python run_viewer.py
 ```
 
-See the web server [UI description](viewer/readme.md)
+See the web server [UI description](viewer/readme.md).
 
-
-
-
-
-
-
-### STAGE 4. Copy created red-black-white BMPs to be used as calendar top part
+### Stage 4. Copy the finished red-black-white BMPs to use as the calendar's top part
 
 ```
 python run_make_tops.py
 ```
-Fills **bmp** folder with the converted images. 
+Fills the **bmp** folder with the converted images.
 
-See [MIN_RANK](settings.py) parameter
+See the [MIN_RANK](settings.py) parameter.
 
-
-
-### STAGE 5. Create red-black-white BMPs with day information for the calendar bottom part
+### Stage 5. Create red-black-white BMPs with day information for the calendar's bottom part
 
 ```
 python run_make_bottoms.py
 ```
-Fills **days** folder with the day images. 
+Fills the **days** folder with the day images.
 
+See the [CALENDAR_YEARS_COUNT](settings.py) parameter.
 
-See [CALENDAR_YEARS_COUNT](settings.py) parameter
+### Stage 6. Copy the calendar data from the `sdcard` directory to an SD card
 
+The essential artifacts are the **bmp** and **days** folders, plus the **readme.txt** and **readme.bmp** files.
 
-
-### STAGE 6. Copy calendar data from 'sdcard' directory to a sd card.
-
-The next artefacts are essential **bmp** and **days** folers, **readme.txt** and **readme.bmp** files.
-
-The SD card must be FAT32 formatted.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The SD card must be **FAT32** formatted.
