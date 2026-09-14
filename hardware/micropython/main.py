@@ -23,12 +23,12 @@ def nextwaketime(year, month, day, hour, mins):
 
 
 
-def runclockupdate(eink,clk,files,text):
+def runclockupdate(eink,clk,files,posttext):
     
     CFN = 'clock.txt'
   
     if not (CFN in files):
-        text.append(      "Clock set ..... SKIP")
+        posttext.append(      "Clock set ..... SKIP")
         print(CFN + " not found. Clock update skipped.")
         return
     
@@ -40,15 +40,17 @@ def runclockupdate(eink,clk,files,text):
     year, month, day, hour, mins = map(int, text.replace("-", " ").replace(":", " ").split())
     print("Closk set: %04i-%02i-%02i %02i:%02i" % (year, month, day, hour, mins ))
 
-    clk.settime( year, month, day, hours, mins)
+    clk.settime( year, month, day, hour, mins)
     year, month, day, hour, mins = clk.gettime()
     
     print("Clock get: %04i-%02i-%02i %02i:%02i" % (year, month, day, hour, mins ))
 
     eink.deletefile("/sd/"+CFN)
-    print(CFN+ " deleted")
-    
-    text.append(      "Clock set ..... DONE")
+    files = eink.getfiles("/sd")
+    if (CFN in files):
+        raise RuntimeError("Unable to delete "+CFN+" file")
+    print(CFN+ " deleted")    
+    posttext.append(      "Clock set ..... DONE")
     
     
     
