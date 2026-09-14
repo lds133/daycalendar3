@@ -38,6 +38,51 @@ class Clock:
         """Set the RTC to the given date/time (seconds forced to 0)."""
         dt = urtc.datetime_tuple(year, month, day, None, hours, mins, 0, 0)
         self.rtc.datetime(dt)
+        
+        
+        
+    def test_alarm(self, wait_seconds=5, timeout_s=8):
+        """
+        Self-test for the DS3231 alarm wiring/config: arms Alarm 1 to fire
+        `wait_seconds` from now (using full year/month/day/hour/min/sec, so
+        it's not subject to the day/hour/minute-only limitation noted
+        above), then actively polls (no board sleep) for up to `timeout_s`
+        seconds.
+ 
+        Returns True if the alarm fired within the timeout, False
+        otherwise (e.g. wiring problem, SQW/INT not connected, alarm
+        register mis-set).
+        """
+        self.rtc.alarm(False, alarm=0)
+        self.rtc.no_interrupt()
+ 
+        # Compute now + wait_seconds via the epoch so minute/hour/day/month
+        # rollovers are handled correctly (unlike naive field addition).
+        now = self.rtc.datetime()
+        now_epoch = time.mktime(
+            (now.year, now.month, now.day, now.hour, now.minute, now.second, 0, 0)
+        )
+        ty, tmo, td, th, tmi, ts, _wd, _yd = time.localtime(now_epoch + wait_seconds)
+ 
+        target = urtc.datetime_tuple(ty, tmo, td, None, th, tmi, ts, 0)
+        self.rtc.alarm_time(target, alarm=0)
+        self.rtc.interrupt(0)
+ 
+        triggered = False
+        start = time.ticks_ms()
+        try:
+            while time.ticks_diff(time.ticks_ms(), start) < timeout_s * 1000:
+                if self.rtc.alarm(alarm=0):
+                    triggered = True
+                    break
+                time.sleep_ms(100)
+        finally:
+            self.rtc.alarm(False, alarm=0)
+            self.rtc.no_interrupt()
+ 
+        return triggered
+        
+        
 
     def waittill_active(self, year, month, day, hours, mins, poll_ms=500):
         """

@@ -47,6 +47,8 @@ import machine
 import sdcard
 import uos
 import time
+import framebuf
+import gc
 import epd7in5bc
 
 # ------------------------------------------------------------------
@@ -62,8 +64,13 @@ SD_MISO_PIN = 16
 SD_SPI_ID   = 0
 SD_BAUD     = 1_000_000
 
-# Rotation applied to every BMP before drawing. Must be 'CW' or 'CCW'.
+# Rotation applied to every BMP (and to text drawn with print()) before
+# drawing. Must be 'CW' or 'CCW'.
 ROTATION = 'CW'
+
+# Color constants for use with EinkSDCard.print()
+BLACK = 'B'
+RED = 'R'
 
 # Reference colors used to classify each BMP palette entry
 _WHITE = (255, 255, 255)
@@ -179,6 +186,20 @@ def _rotated_pixel_position(sx, sy, width, height, rotation):
     return dest_x, dest_y
 
 
+def _new_white_buffer(n):
+    """Allocate an n-byte buffer filled with 0xFF (all-white), without
+    the memory spike of bytearray([0xFF for _ in range(n)]): that form
+    builds a full Python list of n boxed ints (~4 bytes per pointer on
+    a 32-bit board) before the bytearray even exists, which can be
+    several times larger than the final buffer itself. bytearray(n)
+    gives one zero-filled n-byte allocation directly; we then flip the
+    bytes to 0xFF in place."""
+    buf = bytearray(n)
+    for i in range(n):
+        buf[i] = 0xFF
+    return buf
+
+
 # ------------------------------------------------------------------
 # The object
 # ------------------------------------------------------------------
@@ -187,13 +208,28 @@ class EinkSDCard:
     minimal init() / drawbmp() / finit() lifecycle."""
 
     def __init__(self):
-        self.epd = None
+        """Create the e-Paper driver object. The SD card is mounted in
+        init() and unmounted in finit() instead of here, since the card
+        can be physically removed/reinserted during the (potentially
+        long) sleep_some_time() between cycles."""
+        self.epd = epd7in5bc.EPD()
         self.black_buf = None
         self.red_buf = None
         self._sd_mounted = False
 
-    def init(self,isclear=True):
-        """Mount the SD card and initialize + clear the e-Paper panel."""
+    def init(self,isclear):
+        """Mount the SD card, power up and initialize + clear the
+        e-Paper panel, and allocate fresh frame buffers. Safe to call
+        repeatedly in a loop."""
+        # Drop any buffers left from a previous init()/finit() cycle and
+        # force a collection before allocating new ones - important
+        # since this object is designed to be re-init()'d in a loop, and
+        # otherwise freed memory may not be reclaimed in time to satisfy
+        # the next allocation.
+        self.black_buf = None
+        self.red_buf = None
+        gc.collect()
+
         cs = machine.Pin(SD_CS_PIN, machine.Pin.OUT)
         spi = machine.SPI(
             SD_SPI_ID,
@@ -215,17 +251,17 @@ class EinkSDCard:
         self._sd_mounted = True
 
         print("Initializing e-Paper...")
-        self.epd = epd7in5bc.EPD()
         if self.epd.init() != 0:
             raise RuntimeError("EPD init failed - check wiring / epdconfig pin numbers")
-
+        
         if isclear:
             print("Clearing display...")
             self.epd.Clear()
 
         screen_row_bytes = epd7in5bc.EPD_WIDTH // 8
-        self.black_buf = bytearray([0xFF for _ in range(screen_row_bytes * epd7in5bc.EPD_HEIGHT)])
-        self.red_buf = bytearray([0xFF for _ in range(screen_row_bytes * epd7in5bc.EPD_HEIGHT)])
+        buf_size = screen_row_bytes * epd7in5bc.EPD_HEIGHT
+        self.black_buf = _new_white_buffer(buf_size)
+        self.red_buf = _new_white_buffer(buf_size)
 
     def drawbmp(self, filename, xpos, ypos):
         """Read the BMP at `filename` from the SD card, rotate it per
@@ -290,21 +326,152 @@ class EinkSDCard:
             raise RuntimeError("call init() before getfiles()")
         return uos.listdir(dirstr)
 
+    def getfiletext(self, filename, textlimit=100):
+        """Read up to `textlimit` characters from a text file on the
+        mounted SD card (e.g. filename="/sd/notes.txt") and return them
+        as a string."""
+        if not self._sd_mounted:
+            raise RuntimeError("call init() before getfiletext()")
+        with open(filename, "r") as f:
+            return f.read(textlimit)
 
+    def deletefile(self, filename):
+        """Delete a file on the mounted SD card
+        (e.g. filename="/sd/old_image.bmp")."""
+        if not self._sd_mounted:
+            raise RuntimeError("call init() before deletefile()")
+        uos.remove(filename)
+
+    def print_unsafe(self, text, x, y, color=BLACK, scale=1):
+        """Draw `text` using the built-in 8x8 monospace font, upscaled
+        by `scale` (1 = 8x8 per character, 2 = 16x16, etc.), rotated the
+        same way drawbmp() rotates images so (x, y) stay in the same
+        logical coordinate space. `color` is EinkSDCard.BLACK or
+        EinkSDCard.RED; the background is always left white. Raises
+        ValueError if the text doesn't fit at (x, y) - see print() for a
+        version that wraps/truncates instead of raising."""
+        if self.black_buf is None or self.red_buf is None:
+            raise RuntimeError("call init() before print()")
+        if color not in (BLACK, RED):
+            raise ValueError("color must be EinkSDCard.BLACK or EinkSDCard.RED")
+        if scale < 1:
+            raise ValueError("scale must be >= 1")
+
+        # Render the text at native 8x8-per-character size into a small
+        # temporary monochrome framebuffer using MicroPython's built-in
+        # font. MONO_HLSB matches the MSB-first, 8-pixels-per-byte
+        # packing our own screen buffers already use.
+        glyph_w = 8 * len(text)
+        glyph_h = 8
+        row_bytes = (glyph_w + 7) // 8
+        glyph_buf = bytearray(row_bytes * glyph_h)
+        fb = framebuf.FrameBuffer(glyph_buf, glyph_w, glyph_h, framebuf.MONO_HLSB)
+        fb.text(text, 0, 0, 1)
+
+        # Logical size of the (still un-rotated) scaled-up text block.
+        scaled_w = glyph_w * scale
+        scaled_h = glyph_h * scale
+
+        # After a 90-degree rotation the on-screen width is the text
+        # block's original height, and vice versa - same as drawbmp().
+        rotated_w = scaled_h
+        rotated_h = scaled_w
+
+        if x + rotated_w > epd7in5bc.EPD_WIDTH:
+            raise ValueError("Text doesn't fit horizontally at x")
+        if y + rotated_h > epd7in5bc.EPD_HEIGHT:
+            raise ValueError("Text doesn't fit vertically at y")
+
+        screen_row_bytes = epd7in5bc.EPD_WIDTH // 8
+
+        for sy in range(glyph_h):
+            for sx in range(glyph_w):
+                if fb.pixel(sx, sy) == 0:
+                    continue  # background pixel, leave white
+
+                # Expand this one glyph pixel into a scale x scale block.
+                for by in range(scale):
+                    for bx in range(scale):
+                        ssx = sx * scale + bx
+                        ssy = sy * scale + by
+
+                        dest_x, dest_y = _rotated_pixel_position(
+                            ssx, ssy, scaled_w, scaled_h, ROTATION
+                        )
+                        screen_x = x + dest_x
+                        screen_y = y + dest_y
+
+                        byte_index = screen_y * screen_row_bytes + (screen_x // 8)
+                        bit_mask = 0x80 >> (screen_x % 8)
+                        if color == BLACK:
+                            self.black_buf[byte_index] &= (~bit_mask) & 0xFF
+                        else:  # RED
+                            self.red_buf[byte_index] &= (~bit_mask) & 0xFF
+
+    def print(self, text, x, y, color=BLACK, scale=1):
+        """Best-effort text drawing: tries to use all the available
+        space starting at (x, y), wrapping the string onto successive
+        lines (advancing along the panel's line axis by one
+        character-cell each time) as needed to fit, and silently
+        stopping - never raising - once there's no more room. Wrapping
+        is character-based, not word-aware. Any text that still doesn't
+        fit is silently dropped.
+
+        See print_unsafe() for the single-line version that raises
+        ValueError instead of wrapping/dropping."""
+        if self.black_buf is None or self.red_buf is None:
+            raise RuntimeError("call init() before print()")
+        if color not in (BLACK, RED):
+            raise ValueError("color must be EinkSDCard.BLACK or EinkSDCard.RED")
+        if scale < 1:
+            raise ValueError("scale must be >= 1")
+
+        char_extent = 8 * scale  # native-Y space one character needs
+        line_extent = 8 * scale  # native-X space one line needs
+
+        max_chars_per_line = (epd7in5bc.EPD_HEIGHT - y) // char_extent
+        if max_chars_per_line < 1:
+            return  # no room at all at this y - skip quietly
+
+        current_x = x
+        remaining = text
+
+        while remaining and current_x + line_extent <= epd7in5bc.EPD_WIDTH:
+            chunk = remaining[:max_chars_per_line]
+            remaining = remaining[max_chars_per_line:]
+            try:
+                self.print_unsafe(chunk, current_x, y, color, scale)
+            except ValueError:
+                pass  # skip quietly on any unexpected overflow
+            current_x += line_extent
+
+        # any text left over once we run out of horizontal room is
+        # silently dropped rather than raised
 
     def finit(self):
-        """Unmount the SD card, send the composed buffers to the
-        e-Paper, and put the panel to sleep."""
-        if self._sd_mounted:
-            uos.umount(SD_MOUNT_POINT)
-            self._sd_mounted = False
-
+        """Send the composed buffers to the e-Paper, put the panel to
+        sleep (powering it down), and unmount the SD card - safe to do
+        since the card may be physically removed/reinserted during the
+        caller's sleep_some_time() before the next init()."""
         print("Sending buffers to e-Paper...")
         self.epd.display(self.black_buf, self.red_buf)
 
         print("Sleeping display in 5s...")
         time.sleep(5)
         self.epd.sleep()
+
+        # Release the frame buffers now that they've been sent, and
+        # force a collection so the freed heap is actually available to
+        # the next init() call rather than sitting around fragmenting
+        # the heap during sleep_some_time().
+        self.black_buf = None
+        self.red_buf = None
+        gc.collect()
+
         print("Done. Display is in deep sleep.")
+
+        if self._sd_mounted:
+            uos.umount(SD_MOUNT_POINT)
+            self._sd_mounted = False
 
 ### END OF FILE ###
