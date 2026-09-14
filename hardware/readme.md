@@ -28,9 +28,13 @@
 | GP17  |       | CS      |        | SPI0                |
 | GP16  |       | RX      |        | SPI0                |
 
+
 - E-ink is powered at 3.3V.
 - Clock is powered at 5V.
+- SD card is powered at 3.3V.
 - The SD card is wired directly through an SD-to-microSD adapter.
+- The length of the wires connecting the SD card data should be kept to a minimum.
+- Keep in mind that not all SD cards support SPI mode.
 
 # Firmware
 
