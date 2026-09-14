@@ -58,6 +58,7 @@ Example `clock.txt`:
 
 The firmware runs a built-in POST (power-on self-test). If it passes, setup information is displayed for 30 seconds; if it fails, the firmware halts.
 
+![POST](doc/post.png)
 During the main loop, the firmware reads the day's info from the matching file in the **days** folder and pairs it with a random image from the corresponding month-day subfolder in the **bmp** folder. The image is changed at 00:00, 12:00, and 18:00.
 
 ## Onboard LED
