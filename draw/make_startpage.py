@@ -17,14 +17,16 @@ def MakeReadmeBMP(cfg):
     tmp = CreateImageTemplate(cfg.EINK_WIDTH,cfg.EINK_TOP)    
     img = ImageDraw.Draw(tmp)
     
-    dx = 30
+    dx = 25
     x=30
     img.text((cfg.EINK_WIDTH/2, x), cfg.STARTPAGE_TITLE1, font=page.FONT_MID, anchor="mm")
     x+=dx
     img.text((cfg.EINK_WIDTH/2, x), cfg.STARTPAGE_TITLE2, font=page.FONT_MID, anchor="mm")
     x+=dx*3
-    img.text((cfg.EINK_WIDTH/2, x), "%s [ %.2f , %.2f ]" % (cfg.ASTRO_NAME,cfg.ASTRO_LATITUDE,cfg.ASTRO_LONGITUDE), font=page.FONT_SML, anchor="mm")
+    img.text((cfg.EINK_WIDTH/2, x), cfg.ASTRO_NAME, font=page.FONT_SML, anchor="mm")
     x+=dx
+    img.text((cfg.EINK_WIDTH/2, x), "LAT %.2f, LON %.2f" % (cfg.ASTRO_LATITUDE,cfg.ASTRO_LONGITUDE), font=page.FONT_SML, anchor="mm")
+    x+=dx*2
     img.text((cfg.EINK_WIDTH/2, x), cfg.STARTPAGE_URL, font=page.FONT_SML, anchor="mm")
     x+=dx*2
     img.text((cfg.EINK_WIDTH/2, x), cfg.STARTPAGE_VERSION, font=page.FONT_SML, anchor="mm")
