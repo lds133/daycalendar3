@@ -45,20 +45,65 @@
 
 Tested on **MicroPython v1.29.0 (2026-08-24), Raspberry Pi Pico 2 with RP2350**.
 
+## Expected SD card structure
+
+The card maust be formatted as FAT32.
+The root directory contains the following items:
+
+- `days/` — stores generated daily bitmap images organized by year.
+- `bmp/` — stores pictures as bitmap images organized by month and day.
+- `readme.bmp` — a bitmap to be shown on startup.
+
+
+```text
+root/
+├── days/
+│   ├── YYYY/
+│   │   ├── day_YYYY-MM-DD.bmp
+│   │   ├── day_YYYY-MM-DD.bmp
+│   │   └── ...
+│   ├── YYYY/
+│   └── ...
+├── bmp/
+│   ├── MM-DD/
+│   │   ├── image1.bmp
+│   │   ├── image2.bmp
+│   │   └── ...
+│   ├── MM-DD/
+│   └── ...
+└── readme.bmp
+```
+
+
+| Location | Resolution |
+|----------|------------|
+| bmp/MM-DD/*.bmp | 384 × 426 | 
+| days/YYYY/day_YYYY-MM-DD.bmp | 384 × 216 |
+| readme.bmp | 384 × 426 |
+
+All image files use the 3-colour paletted Windows BMP format. The image template generation can be found in the [template.py](../draw/template.py) file.
+
+Examples:
+
+Image file [uk2020-r03.bmp](doc/uk2020-r03.bmp)
+
+Day file [day_2026-01-03.bmp](doc/day_2026-01-03.bmp)
+
+Readme file [readme.bmp](doc/readme.bmp)
+
 ## Setting the clock
 
 To set the clock, create a **clock.txt** file in the SD card's root folder, with the first line in the format `YYYY-MM-DD HH:MM`. The file is read during POST, and deleted once the new time is set.
 
-Example `clock.txt`:
-```
-2026-09-14 11:44
-```
+Example: [clock.txt](doc/clock.txt)
+
 
 ## The firmware loop
 
 The firmware runs a built-in POST (power-on self-test). If it passes, setup information is displayed for 30 seconds; if it fails, the firmware halts.
 
 ![POST](doc/post.png)
+
 During the main loop, the firmware reads the day's info from the matching file in the **days** folder and pairs it with a random image from the corresponding month-day subfolder in the **bmp** folder. The image is changed at 00:00, 12:00, and 18:00.
 
 ## Onboard LED
