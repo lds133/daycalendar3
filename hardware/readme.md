@@ -3,7 +3,7 @@
 1. [Waveshare 3-color e-ink panel](https://www.waveshare.com/wiki/7.5inch_HD_e-Paper_HAT)
 2. [Raspberry Pi Pico 2 board](https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2)
 3. SD card adapter or module
-4. DS3231 RTC module
+4. [DS3231](https://www.mouser.com/ds/2/256/DS3231-102175.pdf) RTC module
 
 ![Front](doc/front.png)
 ![Back](doc/back1.png)
