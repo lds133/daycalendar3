@@ -47,8 +47,7 @@ Tested on **MicroPython v1.29.0 (2026-08-24), Raspberry Pi Pico 2 with RP2350**.
 
 ## Expected SD card structure
 
-The card maust be formatted as FAT32.
-The root directory contains the following items:
+Ensure that the card is formatted using the FAT32 file system. The root directory must contain the following items:
 
 - `days/` — stores generated daily bitmap images organized by year.
 - `bmp/` — stores pictures as bitmap images organized by month and day.
