@@ -151,7 +151,7 @@ def runpost(eink,clk,led):
         
 
 
-eink = EinkSDCard()
+eink = EinkSDCard(True)
 clk = Clock()
 led = Pin(25, Pin.OUT)
 

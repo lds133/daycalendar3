@@ -29,11 +29,18 @@ BMP format supported - and why:
         )
 
 Rotation:
-    Every BMP is rotated 90 degrees before being drawn (the panel is
-    mounted in album/landscape orientation). ROTATION below is hardcoded
-    to either 'CW' (clockwise) or 'CCW' (counterclockwise). After
-    rotation the image's on-screen width equals its original height, and
-    vice versa.
+    Every BMP and every piece of text drawn is rotated 90 degrees
+    clockwise before being drawn (the panel is mounted in album/
+    landscape orientation) - this direction is now permanent/hardcoded,
+    matching the panel's fixed physical mounting. Pass rotate180=True to
+    EinkSDCard() if you additionally need the entire composed picture
+    turned a further half turn around the panel's center (e.g. the panel
+    ends up mounted upside-down relative to that default). This is a
+    whole-canvas reflection applied at final pixel placement, not a
+    per-element flip, so multiple drawbmp()/print() calls still line up
+    correctly relative to each other. After rotation the image's
+    on-screen width equals its original height, and vice versa; that
+    doesn't change with rotate180.
 
 Alignment requirement (why the rotated width and each xpos must be
 multiples of 8):
@@ -63,10 +70,6 @@ SD_MOSI_PIN = 19
 SD_MISO_PIN = 16
 SD_SPI_ID   = 0
 SD_BAUD     = 1_000_000
-
-# Rotation applied to every BMP (and to text drawn with print()) before
-# drawing. Must be 'CW' or 'CCW'.
-ROTATION = 'CW'
 
 # Color constants for use with EinkSDCard.print()
 BLACK = 'B'
@@ -173,16 +176,13 @@ def _read_rows_top_to_bottom(f, info):
     return list(reversed(rows_in_file_order))
 
 
-def _rotated_pixel_position(sx, sy, width, height, rotation):
+def _rotated_pixel_position(sx, sy, width, height):
     """Map a source pixel (sx, sy) - 0-indexed, (0,0) at top-left of the
-    BMP as authored - to its (dest_x, dest_y) position within the
-    rotated image, whose size is (height, width)."""
-    if rotation == 'CW':
-        dest_x = height - 1 - sy
-        dest_y = sx
-    else:  # 'CCW'
-        dest_x = sy
-        dest_y = width - 1 - sx
+    BMP/glyph as authored - to its (dest_x, dest_y) position within the
+    rotated image, whose size is (height, width). The rotation direction
+    is permanently clockwise, matching this panel's physical mounting."""
+    dest_x = height - 1 - sy
+    dest_y = sx
     return dest_x, dest_y
 
 
@@ -200,6 +200,20 @@ def _new_white_buffer(n):
     return buf
 
 
+def _flip_canvas_position(screen_x, screen_y):
+    """Reflect a final screen coordinate around the whole panel's
+    center. Applying this to every drawn pixel (after the normal
+    per-element rotation/placement) turns the entire composed picture
+    180 degrees, including the relative position of separately-drawn
+    elements - unlike flipping each element's own content in place,
+    which leaves elements' positions unchanged and breaks multi-element
+    compositions (e.g. wrapped text lines)."""
+    return (
+        epd7in5bc.EPD_WIDTH - 1 - screen_x,
+        epd7in5bc.EPD_HEIGHT - 1 - screen_y,
+    )
+
+
 # ------------------------------------------------------------------
 # The object
 # ------------------------------------------------------------------
@@ -207,12 +221,22 @@ class EinkSDCard:
     """Bundles the SD card reader and the 7in5bc e-Paper panel behind a
     minimal init() / drawbmp() / finit() lifecycle."""
 
-    def __init__(self):
+    def __init__(self, rotate180=False):
         """Create the e-Paper driver object. The SD card is mounted in
         init() and unmounted in finit() instead of here, since the card
         can be physically removed/reinserted during the (potentially
-        long) sleep_some_time() between cycles."""
+        long) sleep_some_time() between cycles.
+
+        `rotate180`: every BMP and text drawn (drawbmp(), print_unsafe(),
+        print()) is always rotated 90 degrees clockwise to match this
+        panel's physical mounting; pass rotate180=True to additionally
+        turn the entire composed picture a further half turn around the
+        panel's center (e.g. if the panel ends up mounted upside-down
+        relative to that default). This flips the whole canvas, so
+        multiple drawbmp()/print() calls still compose correctly
+        relative to each other."""
         self.epd = epd7in5bc.EPD()
+        self.rotate180 = rotate180
         self.black_buf = None
         self.red_buf = None
         self._sd_mounted = False
@@ -264,9 +288,10 @@ class EinkSDCard:
         self.red_buf = _new_white_buffer(buf_size)
 
     def drawbmp(self, filename, xpos, ypos):
-        """Read the BMP at `filename` from the SD card, rotate it per
-        ROTATION, and draw it into the internal frame buffers with its
-        top-left corner at (xpos, ypos). Can be called multiple times to
+        """Read the BMP at `filename` from the SD card, rotate it 90
+        degrees clockwise, and draw it into the internal frame buffers
+        with its top-left corner at (xpos, ypos) (before any whole-canvas
+        self.rotate180 flip is applied). Can be called multiple times to
         compose several images before finit() sends them to the panel."""
         if self.black_buf is None or self.red_buf is None:
             raise RuntimeError("call init() before drawbmp()")
@@ -278,7 +303,7 @@ class EinkSDCard:
             info = _load_bmp_header(f)
             img_w = info["width"]
             img_h = info["height"]
-            print("BMP is {}x{}, rotating {}".format(img_w, img_h, ROTATION))
+            print("BMP is {}x{}, rotate180={}".format(img_w, img_h, self.rotate180))
 
             # After a 90-degree rotation the on-screen width is the BMP's
             # original height, and the on-screen height is the BMP's
@@ -286,13 +311,7 @@ class EinkSDCard:
             rotated_w = img_h
             rotated_h = img_w
 
-            #if rotated_w % 8 != 0:
-            #    raise ValueError(
-            #        "BMP height ({}) must be a multiple of 8 (it becomes "
-            #        "the on-screen width after rotation)".format(img_h)
-            #    )
-            #if xpos % 8 != 0:
-            #    raise ValueError("xpos must be a multiple of 8")
+
             if xpos + rotated_w > epd7in5bc.EPD_WIDTH:
                 raise ValueError("Rotated image doesn't fit horizontally at xpos")
             if ypos + rotated_h > epd7in5bc.EPD_HEIGHT:
@@ -308,9 +327,11 @@ class EinkSDCard:
                     if color == 'W':
                         continue  # buffers start all-white already
 
-                    dest_x, dest_y = _rotated_pixel_position(sx, sy, img_w, img_h, ROTATION)
+                    dest_x, dest_y = _rotated_pixel_position(sx, sy, img_w, img_h)
                     screen_x = xpos + dest_x
                     screen_y = ypos + dest_y
+                    if self.rotate180:
+                        screen_x, screen_y = _flip_canvas_position(screen_x, screen_y)
 
                     byte_index = screen_y * screen_row_bytes + (screen_x // 8)
                     bit_mask = 0x80 >> (screen_x % 8)
@@ -395,11 +416,11 @@ class EinkSDCard:
                         ssx = sx * scale + bx
                         ssy = sy * scale + by
 
-                        dest_x, dest_y = _rotated_pixel_position(
-                            ssx, ssy, scaled_w, scaled_h, ROTATION
-                        )
+                        dest_x, dest_y = _rotated_pixel_position(ssx, ssy, scaled_w, scaled_h)
                         screen_x = x + dest_x
                         screen_y = y + dest_y
+                        if self.rotate180:
+                            screen_x, screen_y = _flip_canvas_position(screen_x, screen_y)
 
                         byte_index = screen_y * screen_row_bytes + (screen_x // 8)
                         bit_mask = 0x80 >> (screen_x % 8)
