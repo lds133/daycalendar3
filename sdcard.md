@@ -2,9 +2,7 @@
 ## Prepare the SD card
 
 ![Front](hardware/doc/sdcard.png)
-## SD card
 
-![Front](hardware/doc/sdcard.png)
 
 ### Stage 0. Create environment
 
@@ -78,6 +76,9 @@ python run_make_bottoms.py
 Fills the **days** folder with the day images.
 
 See the [CALENDAR_YEARS_COUNT](settings.py) parameter.
+
+See postprocess events file:  [description](birthdays_json_format.md) [example](birthdays_example.json)
+
 
 ### Stage 6. Copy the calendar data from the `sdcard` directory to an SD card
 

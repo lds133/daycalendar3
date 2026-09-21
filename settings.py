@@ -89,4 +89,11 @@ class CFG():
     SERV_PORT = 5555
     
     
+    PP_FILE_NAME = "birthdays.json"
+    PP_IMAGES_DIR = "draw/images"
+    PP_FONT       =    FONT_DIR +"/"+  "times.ttf"
+    PP_FONT_SIZES =    {"small": 0.07, "medium": 0.12, "big": 0.20}
+    PP_MARGIN     =     5     
+    
+    
     

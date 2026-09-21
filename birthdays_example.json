@@ -1,0 +1,42 @@
+{
+
+  "events": [
+
+
+
+      { "type":"birthday",
+        "title":"John",
+        "day":1,
+        "month":1,
+		"year": 2000,
+        "action":[
+          { "type":"image",
+            "src":"ring.png",
+            "hpos":"center", 
+            "vpos":"center"
+          },
+          { "type":"text",
+            "src":"John {age}",
+            "hpos":"center", 
+            "vpos":"bottom",
+            "color":"red",
+			"font":"medium"
+          }
+        ]
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ]
+}

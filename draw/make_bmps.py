@@ -6,6 +6,7 @@ from draw.page import Page
 from wiki_grabber.database import DB,DBEntry
 import shutil
 from datetime import datetime,timedelta
+from draw.day_postprocess import DayPostprocess
 
 
 def MakeTopBMPs(cfg):
@@ -77,11 +78,12 @@ def MakeBottomBMPs(cfg):
 
     db = DB(cfg)
     page = Page(cfg)
+    pp = DayPostprocess(cfg)
+    
 
     t = datetime(datetime.now().year, 1, 1)
     startyear = t.year
     endyear = startyear + cfg.CALENDAR_YEARS_COUNT
-    
     
     while (t.year<=endyear):
         
@@ -89,17 +91,19 @@ def MakeBottomBMPs(cfg):
         assert dd!=None
          
         dayfn = os.path.join( cfg.DAYSDIR , str(t.year), "day_%04i-%02i-%02i%s" % (t.year,t.month,t.day,cfg.BMPEXT))
-        if os.path.isfile(dayfn):
+        if 0: #os.path.isfile(dayfn):
             print(dayfn," - skipped")
         else:    
             Path(dayfn).parent.mkdir(parents=True, exist_ok=True)
             
             img = page.make_day(t.year,t.month,t.day) 
+            img = pp.update(img,t.year,t.month,t.day)
             img.save(dayfn)
-            print(dayfn, " - saved")  
+            print(dayfn, " - saved") 
         
         t += timedelta(days=1)    
-        
+
+
         
 
     
